@@ -8,15 +8,15 @@ const App = () => {
   const Content = (props) => {
     return (
       <>
-        <PartDetails
+        <Part
           partName={props.partDetails[0].name}
           exerciseCount={props.partDetails[0].excercise}
         />
-        <PartDetails
+        <Part
           partName={props.partDetails[1].name}
           exerciseCount={props.partDetails[1].excercise}
         />
-        <PartDetails
+        <Part
           partName={props.partDetails[2].name}
           exerciseCount={props.partDetails[2].excercise}
         />
@@ -25,7 +25,7 @@ const App = () => {
   };
 
   // content details
-  const PartDetails = (props) => {
+  const Part = (props) => {
     return (
       <div>
         <p>
