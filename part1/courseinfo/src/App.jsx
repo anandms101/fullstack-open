@@ -1,7 +1,7 @@
 const App = () => {
   // header component
-  const Header = ({ courseName }) => {
-    return <h1>{courseName}</h1>;
+  const Header = ({ course }) => {
+    return <h1>{course}</h1>;
   };
 
   // content component
@@ -9,16 +9,16 @@ const App = () => {
     return (
       <>
         <Part
-          partName={props.partDetails[0].name}
-          exerciseCount={props.partDetails[0].excercise}
+          partName={props.parts[0].name}
+          exerciseCount={props.parts[0].exercises}
         />
         <Part
-          partName={props.partDetails[1].name}
-          exerciseCount={props.partDetails[1].excercise}
+          partName={props.parts[1].name}
+          exerciseCount={props.parts[1].exercises}
         />
         <Part
-          partName={props.partDetails[2].name}
-          exerciseCount={props.partDetails[2].excercise}
+          partName={props.parts[2].name}
+          exerciseCount={props.parts[2].exercises}
         />
       </>
     );
@@ -37,40 +37,39 @@ const App = () => {
 
   // total component
   const Total = (props) => {
-
-    // get the total of exercises 
+    // get the total of exercises
     let exerciseTotal = 0;
-    for(var i = 0; i < props.partDetails.length; i++){
-      exerciseTotal += props.partDetails[i].excercise;
+    for (var i = 0; i < props.parts.length; i++) {
+      exerciseTotal += props.parts[i].exercises;
     }
 
     return <p>Number of exercises {exerciseTotal}</p>;
   };
 
   // new structure of data
-  const coursedetails = {
+  const course = {
     name: "Half Stack application development",
     parts: [
       {
         name: "Fundamentals of React",
-        excercise: 10,
+        exercises: 10,
       },
       {
         name: "Using props to pass data",
-        excercise: 7,
+        exercises: 7,
       },
       {
         name: "State of a component",
-        excercise: 14,
+        exercises: 14,
       },
     ],
   };
 
   return (
     <div>
-      <Header courseName={coursedetails.name} />
-      <Content partDetails={coursedetails.parts} />
-      <Total partDetails={coursedetails.parts} />
+      <Header course={course.name} />
+      <Content parts={course.parts} />
+      <Total parts={course.parts} />
     </div>
   );
 };
