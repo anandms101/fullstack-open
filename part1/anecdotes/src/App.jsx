@@ -1,27 +1,40 @@
 import { useState } from "react";
 
+// component to display heading
+const Heading = (props) => {
+  return <h1>{props.text}</h1>;
+};
+
+// component to display content
+const Content = (props) => {
+  return <p>{props.content}</p>;
+};
+
 // component to display button
 const Button = (props) => {
   return (
-    <div>
+    <>
       <button onClick={props.onClick}>{props.buttonLabel}</button>
-    </div>
+    </>
   );
 };
 
-function getRandomIntInclusive(min, max, currentSelectedValue) {
-  const minCeiled = Math.ceil(min);
-  const maxFloored = Math.floor(max);
-  var newSelectedValue = Math.floor(
-    Math.random() * (maxFloored - minCeiled + 1) + minCeiled
+// component to display most voted anecdote
+const MostVotedAnecdote = (props) => {
+  var maxPoints = Math.max(...props.points);
+  var indexOfLargestAnec = props.points.indexOf(maxPoints);
+  var largestAnecdote = props.anecdotes[indexOfLargestAnec];
+
+  return (
+    <>
+      <Content content={largestAnecdote} />
+      <Content content={maxPoints} />
+    </>
   );
-  if (currentSelectedValue === newSelectedValue) {
-    return getRandomIntInclusive(min, max, currentSelectedValue);
-  }
-  return newSelectedValue; // The maximum is inclusive and the minimum is inclusive
-}
+};
 
 const App = () => {
+  // array of anecdotes
   const anecdotes = [
     "If it hurts, do it more often.",
     "Adding manpower to a late software project makes it later!",
@@ -33,17 +46,61 @@ const App = () => {
     "The only way to go fast, is to go well.",
   ];
 
+  // state to store the selected anecdote
   const [selected, setSelected] = useState(0);
+
+  //creating an array filled with zeros
+  const [points, setPoints] = useState(Array(anecdotes.length).fill(0));
+
+  // store most votes
+  const mostVotes = 0;
+
+  // function to get random index
+  function getRandomIntInclusive(min, max, currentSelectedValue) {
+    const minCeiled = Math.ceil(min);
+    const maxFloored = Math.floor(max);
+    var newSelectedValue = Math.floor(
+      Math.random() * (maxFloored - minCeiled + 1) + minCeiled
+    );
+    // if the new selected value is the same as the current selected value, then call the function again
+    if (currentSelectedValue === newSelectedValue) {
+      return getRandomIntInclusive(min, max, currentSelectedValue);
+    }
+    return newSelectedValue; // The maximum is inclusive and the minimum is inclusive
+  }
+
+  // function to handle vote
+  const handleVote = (selected) => {
+    const copy = [...points];
+    copy[selected] += 1;
+    setPoints(copy);
+  };
+
+  // function to get the most voted anecdote
+  function mostVotedAnecdoteFetcher() {
+    var indexOfLargestAnec = points.indexOf(Math.max(...points));
+    return anecdotes[indexOfLargestAnec];
+  }
 
   return (
     <div>
-      {anecdotes[selected]}
+      <Heading text="Anecdote of the day" />
+      <Content content={anecdotes[selected]} />
+      <Content content={`has ${points[selected]} votes`} />
+      <Button
+        buttonLabel={"vote"}
+        onClick={() => {
+          handleVote(selected);
+        }}
+      />
       <Button
         buttonLabel={"next anecdote"}
         onClick={() =>
           setSelected(getRandomIntInclusive(0, anecdotes.length - 1, selected))
         }
       />
+      <Heading text="Anecdote with most votes" />
+      <MostVotedAnecdote points={points} anecdotes={anecdotes} />
     </div>
   );
 };
