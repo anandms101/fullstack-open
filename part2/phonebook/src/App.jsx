@@ -1,10 +1,9 @@
 import { useState } from "react";
 
 // component for Phonebook filter
-const PhonebookFilter = (props) => {
+const Filter = (props) => {
   return (
     <>
-      <Heading text={"Phonebook"} />
       filter shown with{" "}
       <input value={props.filter} onChange={props.handleFilterChange} />
     </>
@@ -12,10 +11,9 @@ const PhonebookFilter = (props) => {
 };
 
 // component to handle input fields
-const PersonInput = (props) => {
+const PersonForm = (props) => {
   return (
     <>
-      <Heading text="Add a new" />
       <form>
         <div>
           name <input value={props.newName} onChange={props.handleNameChange} />
@@ -35,23 +33,7 @@ const PersonInput = (props) => {
 };
 
 // component to display number stored
-const Numbers = ({ persons, filter }) => {
-  return (
-    <>
-      <Heading text="Numbers" />
-      <People persons={persons} filter={filter} />
-    </>
-  );
-};
-
-// component to add headings
-const Heading = ({ text }) => {
-  return <h2>{text}</h2>;
-};
-
-// component to display people added
-const People = ({ persons, filter }) => {
-  console.log("filter", persons);
+const Persons = ({ persons, filter }) => {
   return (
     <>
       {persons
@@ -60,11 +42,7 @@ const People = ({ persons, filter }) => {
         )
         .map((person) => (
           <>
-            <Person
-              key={person.name}
-              name={person.name}
-              number={person.number}
-            />
+            <Person key={person.id} name={person.name} number={person.number} />
           </>
         ))}
     </>
@@ -92,7 +70,12 @@ const Button = ({ handleClick, text }) => {
 };
 
 const App = () => {
-  const [persons, setPersons] = useState([]);
+  const [persons, setPersons] = useState([
+    { name: "Arto Hellas", number: "040-123456", id: 1 },
+    { name: "Ada Lovelace", number: "39-44-5323523", id: 2 },
+    { name: "Dan Abramov", number: "12-43-234345", id: 3 },
+    { name: "Mary Poppendieck", number: "39-23-6423122", id: 4 },
+  ]);
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState(null);
   const [filter, setFilter] = useState("");
@@ -140,18 +123,18 @@ const App = () => {
 
   return (
     <div>
-      <PhonebookFilter
-        filter={filter}
-        handleFilterChange={handleFilterChange}
-      />
-      <PersonInput
+      <h2>Phonebook</h2>
+      <Filter filter={filter} handleFilterChange={handleFilterChange} />
+      <h3>Add a new</h3>
+      <PersonForm
         newName={newName}
         handleNameChange={handleNameChange}
         newNumber={newNumber}
         handleNumberChange={handleNumberChange}
         handleClick={handleAddingPeople}
       />
-      <Numbers persons={persons} filter={filter}/>
+      <h3>Numbers</h3>
+      <Persons persons={persons} filter={filter} />
     </div>
   );
 };
