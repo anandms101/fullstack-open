@@ -1,11 +1,12 @@
 import { useState } from "react";
 
 // component for Phonebook filter
-const PhonebookFilter = () => {
+const PhonebookFilter = (props) => {
   return (
     <>
       <Heading text={"Phonebook"} />
-      filter shown with <input />
+      filter shown with{" "}
+      <input value={props.filter} onChange={props.handleFilterChange} />
     </>
   );
 };
@@ -34,11 +35,11 @@ const PersonInput = (props) => {
 };
 
 // component to display number stored
-const Numbers = ({ persons }) => {
+const Numbers = ({ persons, filter }) => {
   return (
     <>
       <Heading text="Numbers" />
-      <People persons={persons} />
+      <People persons={persons} filter={filter} />
     </>
   );
 };
@@ -49,16 +50,34 @@ const Heading = ({ text }) => {
 };
 
 // component to display people added
-const People = ({ persons }) => {
+const People = ({ persons, filter }) => {
+  console.log("filter", persons);
   return (
     <>
-      {persons.map((person) => (
-        <>
-          <p>
-            {person.name} {person.number}
-          </p>
-        </>
-      ))}
+      {persons
+        .filter((person) =>
+          person.name.toLowerCase().includes(filter.toLowerCase())
+        )
+        .map((person) => (
+          <>
+            <Person
+              key={person.name}
+              name={person.name}
+              number={person.number}
+            />
+          </>
+        ))}
+    </>
+  );
+};
+
+// component to display person information
+const Person = (props) => {
+  return (
+    <>
+      <p>
+        {props.name} {props.number}
+      </p>
     </>
   );
 };
@@ -76,6 +95,7 @@ const App = () => {
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState(null);
+  const [filter, setFilter] = useState("");
 
   // function to handle name change
   function handleNameChange(event) {
@@ -113,9 +133,17 @@ const App = () => {
     setNewNumber(null);
   }
 
+  // function to handle filter change
+  function handleFilterChange(event) {
+    setFilter(event.target.value);
+  }
+
   return (
     <div>
-      <PhonebookFilter />
+      <PhonebookFilter
+        filter={filter}
+        handleFilterChange={handleFilterChange}
+      />
       <PersonInput
         newName={newName}
         handleNameChange={handleNameChange}
@@ -123,7 +151,7 @@ const App = () => {
         handleNumberChange={handleNumberChange}
         handleClick={handleAddingPeople}
       />
-      <Numbers persons={persons} />
+      <Numbers persons={persons} filter={filter}/>
     </div>
   );
 };
