@@ -41,9 +41,7 @@ const Persons = ({ persons, filter }) => {
           person.name.toLowerCase().includes(filter.toLowerCase())
         )
         .map((person) => (
-          <>
             <Person key={person.id} name={person.name} number={person.number} />
-          </>
         ))}
     </>
   );
@@ -52,11 +50,9 @@ const Persons = ({ persons, filter }) => {
 // component to display person information
 const Person = (props) => {
   return (
-    <>
-      <p>
+      <p key={props.id}>
         {props.name} {props.number}
       </p>
-    </>
   );
 };
 
@@ -93,10 +89,10 @@ const App = () => {
   // function to handle adding people
   function handleAddingPeople(event) {
     event.preventDefault();
-
+  
     const copy = [...persons];
-    const newObj = { name: newName, number: newNumber };
-
+    const newObj = { name: newName, number: newNumber, id: persons.length + 1 }; // Generating unique ID
+  
     // check if the person is already added
     for (var i = 0; i < persons.length; i++) {
       if (JSON.stringify(persons[i]) === JSON.stringify(newObj)) {
@@ -107,7 +103,7 @@ const App = () => {
         return;
       }
     }
-
+  
     // add the person to the phonebook
     copy.push(newObj);
     setPersons(copy);
