@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 
 // component for Phonebook filter
 const Filter = (props) => {
@@ -41,7 +42,7 @@ const Persons = ({ persons, filter }) => {
           person.name.toLowerCase().includes(filter.toLowerCase())
         )
         .map((person) => (
-            <Person key={person.id} name={person.name} number={person.number} />
+          <Person key={person.id} name={person.name} number={person.number} />
         ))}
     </>
   );
@@ -50,9 +51,9 @@ const Persons = ({ persons, filter }) => {
 // component to display person information
 const Person = (props) => {
   return (
-      <p key={props.id}>
-        {props.name} {props.number}
-      </p>
+    <p key={props.id}>
+      {props.name} {props.number}
+    </p>
   );
 };
 
@@ -66,12 +67,7 @@ const Button = ({ handleClick, text }) => {
 };
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: "Arto Hellas", number: "040-123456", id: 1 },
-    { name: "Ada Lovelace", number: "39-44-5323523", id: 2 },
-    { name: "Dan Abramov", number: "12-43-234345", id: 3 },
-    { name: "Mary Poppendieck", number: "39-23-6423122", id: 4 },
-  ]);
+  const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState(null);
   const [filter, setFilter] = useState("");
@@ -89,10 +85,10 @@ const App = () => {
   // function to handle adding people
   function handleAddingPeople(event) {
     event.preventDefault();
-  
+
     const copy = [...persons];
     const newObj = { name: newName, number: newNumber, id: persons.length + 1 }; // Generating unique ID
-  
+
     // check if the person is already added
     for (var i = 0; i < persons.length; i++) {
       if (JSON.stringify(persons[i]) === JSON.stringify(newObj)) {
@@ -103,7 +99,7 @@ const App = () => {
         return;
       }
     }
-  
+
     // add the person to the phonebook
     copy.push(newObj);
     setPersons(copy);
@@ -116,6 +112,13 @@ const App = () => {
   function handleFilterChange(event) {
     setFilter(event.target.value);
   }
+
+  // fetching data from server
+  useEffect(() => {
+    axios
+      .get("http://localhost:3001/persons")
+      .then((response) => setPersons(response.data));
+  }, []);
 
   return (
     <div>
