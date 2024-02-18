@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import personService from "./services/persons";
 
 // component for Phonebook filter
@@ -48,6 +47,8 @@ const Persons = (props) => {
             key={person.id}
             persons={props.persons}
             person={person}
+            setSuccessMessage={props.setSuccessMessage}
+            setErrorMessage={props.setErrorMessage}
           />
         ))}
     </>
@@ -59,10 +60,23 @@ const Person = (props) => {
   // handle deletion of person from the server
   function handleDeletePerson(id) {
     if (window.confirm(`Delete ${props.person.name}?`)) {
-      console.log(id, "id");
-      personService.deletePerson(id).then((response) => {
-        props.setPersons(props.persons.filter((person) => person.id !== id));
-      });
+      personService
+        .deletePerson(id)
+        .then((response) => {
+          props.setPersons(props.persons.filter((person) => person.id !== id));
+          props.setSuccessMessage(`Deleted ${props.person.name}`);
+          setTimeout(() => {
+            props.setSuccessMessage(null);
+          }, 5000);
+        })
+        .catch((error) => {
+          props.setErrorMessage(
+            `${props.person.name} has already been removed from the server`
+          );
+          setTimeout(() => {
+            props.setErrorMessage(null);
+          }, 5000);
+        });
     }
   }
 
@@ -85,11 +99,32 @@ const Button = ({ handleClick, text }) => {
   );
 };
 
+// component to show error message
+const ErrorNotification = ({ message }) => {
+  if (message === null) {
+    return null;
+  }
+
+  return <div className="error">{message}</div>;
+};
+
+// component to show success message
+const SuccessNotification = ({ message }) => {
+  if (message === null) {
+    return null;
+  }
+
+  return <div className="success">{message}</div>;
+};
+
+// main App component
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState(null);
   const [filter, setFilter] = useState("");
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   // function to handle name change
   function handleNameChange(event) {
@@ -109,14 +144,32 @@ const App = () => {
     // check if the person is already added
     for (var i = 0; i < persons.length; i++) {
       if (persons[i].name === newObj.name) {
-        if(window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)){
-          personService.update(persons[i].id, newObj).then((response) => {
-            setPersons(
-              persons.map((person) =>
-                person.id !== persons[i].id ? person : response
-              )
-            );
-          });
+        if (
+          window.confirm(
+            `${newName} is already added to phonebook, replace the old number with a new one?`
+          )
+        ) {
+          personService
+            .update(persons[i].id, newObj)
+            .then((response) => {
+              setPersons(
+                persons.map((person) =>
+                  person.id !== persons[i].id ? person : response
+                )
+              );
+              setSuccessMessage(`Updated ${newName}`);
+              setTimeout(() => {
+                setSuccessMessage(null);
+              }, 5000);
+            })
+            .catch((error) => {
+              setErrorMessage(
+                `${newName} has already been removed from the server`
+              );
+              setTimeout(() => {
+                setErrorMessage(null);
+              }, 5000);
+            });
         }
         // clear the input fields
         setNewName("");
@@ -126,9 +179,21 @@ const App = () => {
     }
 
     // posting data to the server
-    personService.create(newObj).then((response) => {
-      setPersons(persons.concat(response));
-    });
+    personService
+      .create(newObj)
+      .then((response) => {
+        setPersons(persons.concat(response));
+        setSuccessMessage(`Added ${newName}`);
+        setTimeout(() => {
+          setSuccessMessage(null);
+        }, 5000);
+      })
+      .catch((error) => {
+        setErrorMessage(error.response.data.error);
+        setTimeout(() => {
+          setErrorMessage(null);
+        }, 5000);
+      });
 
     // clear the input fields
     setNewName("");
@@ -149,6 +214,8 @@ const App = () => {
 
   return (
     <div>
+      <SuccessNotification message={successMessage} />
+      <ErrorNotification message={errorMessage} />
       <h2>Phonebook</h2>
       <Filter filter={filter} handleFilterChange={handleFilterChange} />
       <h3>Add a new</h3>
@@ -160,7 +227,13 @@ const App = () => {
         handleClick={handleAddingPeople}
       />
       <h3>Numbers</h3>
-      <Persons setPersons={setPersons} persons={persons} filter={filter} />
+      <Persons
+        setErrorMessage={setErrorMessage}
+        setSuccessMessage={setSuccessMessage}
+        setPersons={setPersons}
+        persons={persons}
+        filter={filter}
+      />
     </div>
   );
 };
