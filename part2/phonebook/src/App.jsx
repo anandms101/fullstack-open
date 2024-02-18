@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import personService from "./services/persons";
 
 // component for Phonebook filter
 const Filter = (props) => {
@@ -34,15 +35,20 @@ const PersonForm = (props) => {
 };
 
 // component to display number stored
-const Persons = ({ persons, filter }) => {
+const Persons = (props) => {
   return (
     <>
-      {persons
+      {props.persons
         .filter((person) =>
-          person.name.toLowerCase().includes(filter.toLowerCase())
+          person.name.toLowerCase().includes(props.filter.toLowerCase())
         )
         .map((person) => (
-          <Person key={person.id} name={person.name} number={person.number} />
+          <Person
+            setPersons={props.setPersons}
+            key={person.id}
+            persons={props.persons}
+            person={person}
+          />
         ))}
     </>
   );
@@ -50,9 +56,22 @@ const Persons = ({ persons, filter }) => {
 
 // component to display person information
 const Person = (props) => {
+  // handle deletion of person from the server
+  function handleDeletePerson(id) {
+    if (window.confirm(`Delete ${props.person.name}?`)) {
+      console.log(id, "id");
+      personService.deletePerson(id).then((response) => {
+        props.setPersons(props.persons.filter((person) => person.id !== id));
+      });
+    }
+  }
+
   return (
     <p key={props.id}>
-      {props.name} {props.number}
+      {props.person.name} {props.person.number}{" "}
+      <button onClick={() => handleDeletePerson(props.person.id)}>
+        delete
+      </button>
     </p>
   );
 };
@@ -85,14 +104,20 @@ const App = () => {
   // function to handle adding people
   function handleAddingPeople(event) {
     event.preventDefault();
-
-    const copy = [...persons];
-    const newObj = { name: newName, number: newNumber, id: persons.length + 1 }; // Generating unique ID
+    const newObj = { name: newName, number: newNumber }; // Generating unique ID
 
     // check if the person is already added
     for (var i = 0; i < persons.length; i++) {
-      if (JSON.stringify(persons[i]) === JSON.stringify(newObj)) {
-        alert(`${newName} is already added to phonebook`);
+      if (persons[i].name === newObj.name) {
+        if(window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)){
+          personService.update(persons[i].id, newObj).then((response) => {
+            setPersons(
+              persons.map((person) =>
+                person.id !== persons[i].id ? person : response
+              )
+            );
+          });
+        }
         // clear the input fields
         setNewName("");
         setNewNumber(null);
@@ -100,9 +125,11 @@ const App = () => {
       }
     }
 
-    // add the person to the phonebook
-    copy.push(newObj);
-    setPersons(copy);
+    // posting data to the server
+    personService.create(newObj).then((response) => {
+      setPersons(persons.concat(response));
+    });
+
     // clear the input fields
     setNewName("");
     setNewNumber(null);
@@ -115,9 +142,9 @@ const App = () => {
 
   // fetching data from server
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/persons")
-      .then((response) => setPersons(response.data));
+    personService.getAll().then((response) => {
+      setPersons(response);
+    });
   }, []);
 
   return (
@@ -133,7 +160,7 @@ const App = () => {
         handleClick={handleAddingPeople}
       />
       <h3>Numbers</h3>
-      <Persons persons={persons} filter={filter} />
+      <Persons setPersons={setPersons} persons={persons} filter={filter} />
     </div>
   );
 };
