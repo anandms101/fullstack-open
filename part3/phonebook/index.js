@@ -1,8 +1,29 @@
 const express = require("express");
+const morgan = require("morgan");
 
 const app = express();
 
 app.use(express.json());
+
+app.use(
+  morgan(function (tokens, req, res) {
+    // create a new token to display post request body
+    tokens["post-body"] = function (req, res) {
+      return JSON.stringify(req.body);
+    };
+
+    return [
+      tokens.method(req, res),
+      tokens.url(req, res),
+      tokens.status(req, res),
+      tokens.res(req, res, "content-length"),
+      "-",
+      tokens["response-time"](req, res),
+      "ms",
+      tokens["post-body"](req, res),
+    ].join(" ");
+  })
+);
 
 let persons = [
   {
@@ -60,26 +81,26 @@ app.delete("/api/persons/:id", (req, res) => {
 
 app.post("/api/persons", (req, res) => {
   const person = req.body;
-  console.log(req.body)
+  console.log(req.body);
 
-  if(!person){
+  if (!person) {
     return res.status(400).json({
-      error: "content missing"
-    })
+      error: "content missing",
+    });
   }
 
-  persons.forEach(p => {
-    if(p.name === person.name){
+  persons.forEach((p) => {
+    if (p.name === person.name) {
       return res.status(400).json({
-        error: "name must be unique"
-      })
+        error: "name must be unique",
+      });
     }
-  })
+  });
 
   person.id = Math.floor(Math.random() * 1000);
   persons = persons.concat(person);
   res.json(person);
-})
+});
 
 app.put("/api/persons/:id", (req, res) => {
   const id = Number(req.params.id);
