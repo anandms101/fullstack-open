@@ -1,6 +1,26 @@
 const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
+const mongoose = require("mongoose");
+
+if (process.argv.length < 3) {
+  console.log("give password as argument");
+  process.exit(1);
+}
+
+const password = process.argv[2];
+
+const url = `mongodb+srv://anandms01:${password}@fullstackopen.zwni0qv.mongodb.net/?retryWrites=true&w=majority&appName=fullstackopen`;
+
+mongoose.set("strictQuery", false);
+mongoose.connect(url);
+
+const phoneBookSchema = new mongoose.Schema({
+  name: String,
+  number: String,
+});
+
+const Phone = mongoose.model("Phone", phoneBookSchema);
 
 const app = express();
 
@@ -51,7 +71,9 @@ let persons = [
 ];
 
 app.get("/", (req, res) => {
-  res.send("<h1>Hello World!</h1>");
+  Phone.find({}).then((result) => {
+    res.json(result);
+  });
 });
 
 app.get("/api/persons", (req, res) => {
@@ -82,26 +104,37 @@ app.delete("/api/persons/:id", (req, res) => {
 });
 
 app.post("/api/persons", (req, res) => {
+  // const person = req.body;
+  // console.log(req.body);
+
+  // if (!person) {
+  //   return res.status(400).json({
+  //     error: "content missing",
+  //   });
+  // }
+
+  // persons.forEach((p) => {
+  //   if (p.name === person.name) {
+  //     return res.status(400).json({
+  //       error: "name must be unique",
+  //     });
+  //   }
+  // });
+
+  // person.id = Math.floor(Math.random() * 1000);
+  // persons = persons.concat(person);
+  // res.json(person);
+
+  // code for saving the data
   const person = req.body;
-  console.log(req.body);
-
-  if (!person) {
-    return res.status(400).json({
-      error: "content missing",
-    });
-  }
-
-  persons.forEach((p) => {
-    if (p.name === person.name) {
-      return res.status(400).json({
-        error: "name must be unique",
-      });
-    }
+  const phone = new Phone({
+    name: person.name,
+    number: person.number,
   });
 
-  person.id = Math.floor(Math.random() * 1000);
-  persons = persons.concat(person);
-  res.json(person);
+  phone.save().then((result) => {
+    res.json(result);
+  });
 });
 
 app.put("/api/persons/:id", (req, res) => {
