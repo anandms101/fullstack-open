@@ -42,6 +42,8 @@ app.post('/api/blogs', (request, response) => {
       .save()
       .then((result) => {
         response.status(201).json(result);
+      }).catch((error) => {
+        logger.error(error);
       });
 });
 
